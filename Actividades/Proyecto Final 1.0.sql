@@ -71,6 +71,72 @@ tbl_fact_resumen g on a.idorden = g.idorden
 where
 f.dia_calendario = dia_calendario;
 
-end //
+commit;
+END;
+
+
+/*
+==== Acciones =====:
+ 1 = Agregar Catálago
+ 2 = Actualizar Catálogo
+ 3 = Desactivar Catálago
+ 4 = Agregar producto a catalogo
+ 5 = Desactivar Producto de catalogo
+*/
+select * from bd_platvideo.tbl_catalogo;
+/*Ejemplos*/
+/*Ingresar Catálago*/
+call sp_catalago ('Headset', 'Audifonos gamers con RGB', 1500.00, 2000.00, '2022-03-23 01:00','2022-03-25 01:00', null, null, null,null, null, 1 )
+
+/* Actualizar Catálogo*/
+call sp_catalago ('Headset', 'Audifonos gamers', 1500.00, 2000.00, '2022-03-23 01:00','2022-03-25 01:00', null, 1, null,null, null, 2 )
+
+/* Desactivar Catálogo*/
+call sp_catalago ('Headset', 'Audifonos gamers', 1500.00, 2000.00, '2022-03-23 01:00','2022-03-22 01:00', null, 1, null,null, null, 3 )
+
+/* Agregar a Catálogo*/
+call sp_catalago ('', '', 0, 0, null,null, 1, null, 1,27.00, 1, 4 ); select * from bd_platvideo.tbl_cat_prods;
+
+/* Desactivar Producto de catalogo*/
+call sp_catalago ('', '', 0, 0, null,null, 1, null, 1,0, 1, 5 ); select * from bd_platvideo.tbl_cat_prods;
+
+delimiter //
+create procedure sp_catalago (
+in p_titulo varchar(45), 
+in p_descripcion varchar(45),
+ in p_costo decimal(12,2), 
+ in p_precio_venta decimal(12,2),
+ in p_fecha_inicio datetime ,
+ in p_fecha_fin datetime,
+ in p_id_producto int,
+ in p_id_cat int,
+ in p_iid_cat int ,
+ in p_precio_venta2 decimal(12,2),
+ in p_estado varchar(45),
+ in accion int
+)
+begin
+	case
+		when accion=1 then 
+			insert into tbl_catalogo  values (0,p_titulo,p_descripcion,p_costo,p_precio_venta,p_fecha_inicio,p_fecha_fin);
+            
+        when accion=2 then 
+			update tbl_catalogo set titulo=p_titulo , descripcion=p_descripcion,costo=p_costo,precio_venta=p_precio_venta,fecha_inicio=p_fecha_inicio,fecha_fin=p_fecha_fin where id_cat=p_id_cat;
+            
+        when accion=3 then 
+			update  tbl_catalogo set fecha_fin=p_fecha_fin where id_cat=p_id_cat;
+
+       when accion = 4 then
+			insert into tbl_cat_prods values(p_id_producto,p_iid_cat,p_precio_venta2,p_estado);
+       
+       when accion=5 then
+			update tbl_cat_prods set estado=0 where id_producto=p_id_producto and iid_cat=p_iid_cat;
+       
+     end case;   
+commit;
+end;
+
+		
+
 
 
